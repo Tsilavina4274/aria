@@ -353,13 +353,11 @@ const AdminDashboard = () => {
 
   const handleMarkAsRead = async (messageId: string) => {
     try {
-      // Toujours essayer l'API réelle en premier
       const response = await contactApi.updateMessageStatus(messageId, 'LU');
       if (response.success && response.data) {
         setMessages(messages.map(msg =>
           msg.id === messageId ? response.data.message : msg
         ));
-        localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Succès",
           description: "Message marqué comme lu",
@@ -367,26 +365,11 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      // Utiliser le mock seulement en cas d'échec
-      try {
-        const response = await mockContactApi.updateMessageStatus(messageId, 'LU');
-        if (response.success && response.data) {
-          setMessages(messages.map(msg =>
-            msg.id === messageId ? response.data.message : msg
-          ));
-          enableFallbackMode();
-          toast({
-            title: "Succès",
-            description: "Message marqué comme lu (mode offline)",
-          });
-        }
-      } catch (mockError) {
-        toast({
-          title: "Erreur",
-          description: "Erreur lors de la mise à jour du statut",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour du statut",
+        variant: "destructive",
+      });
     }
   };
 
@@ -894,7 +877,7 @@ const AdminDashboard = () => {
                       </div>
                       {selectedMessageId === message.id && (
                         <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-700 animate-fadeIn">
-                          <h4 className="text-orange-400 font-medium mb-3">Répondre à {message.name}</h4>
+                          <h4 className="text-orange-400 font-medium mb-3">Répondre �� {message.name}</h4>
                           <textarea
                             value={messageReply}
                             onChange={(e) => setMessageReply(e.target.value)}
