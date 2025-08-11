@@ -230,11 +230,14 @@ export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
   try {
     const response = await projectsApi.getPublicProjects();
     if (response.success && response.data) {
+      // Désactiver le mode fallback si l'API fonctionne
+      localStorage.removeItem('api_fallback_mode');
       return response.data.projects.map(convertApiToAdminProject);
     }
-    return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
+    throw new Error('API response not successful');
   } catch (error) {
     console.warn('API non disponible, utilisation des données par défaut:', error.message);
+    localStorage.setItem('api_fallback_mode', 'true');
     return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
   }
 };
