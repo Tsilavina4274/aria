@@ -37,7 +37,10 @@ const ContactForm = () => {
         message: formData.message
       };
 
-      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+      // En production, utiliser directement le mock si pas d'API configurée
+    const shouldUseMock = !import.meta.env.DEV || isInFallbackMode();
+    const apiToUse = shouldUseMock ? mockContactApi : contactApi;
+
     const response = await apiToUse.sendMessage(messageData);
 
     if (response.success) {
@@ -53,7 +56,7 @@ const ContactForm = () => {
   } catch (error) {
     console.error('Erreur lors de l\'envoi du message:', error);
 
-    // Essayer avec le mock en fallback
+    // En cas d'erreur, toujours essayer avec le mock
     try {
       const response = await mockContactApi.sendMessage(messageData);
       if (response.success) {
