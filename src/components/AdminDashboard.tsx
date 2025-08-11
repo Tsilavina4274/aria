@@ -404,7 +404,7 @@ const AdminDashboard = () => {
         ));
         toast({
           title: "Succès",
-          description: `Statut chang�� vers "${newStatus}"`,
+          description: `Statut changé vers "${newStatus}"`,
         });
       }
     } catch (error) {
@@ -478,10 +478,14 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-2 mt-2">
               <div className={`w-3 h-3 rounded-full ${dbStatus === 'connected' ? 'bg-green-500' : dbStatus === 'disconnected' ? 'bg-red-500' : 'bg-yellow-500'} animate-pulse`}></div>
               <span className="text-sm text-gray-400">
-                Base de données: {
-                  dbStatus === 'connected' ? 'Connectée' :
-                  dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
-                }
+                {isInFallbackMode() ? (
+                  <>Mode offline - Données de démonstration</>
+                ) : (
+                  <>Base de données: {
+                    dbStatus === 'connected' ? 'Connectée' :
+                    dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
+                  }</>
+                )}
               </span>
             </div>
           </div>
