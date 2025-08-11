@@ -2,6 +2,7 @@
 
 // Test du CRUD complet des projets avec la vraie API
 const API_URL = 'http://localhost:3001/api';
+const FRONTEND_URL = 'http://localhost:8081';
 
 let authToken = '';
 
