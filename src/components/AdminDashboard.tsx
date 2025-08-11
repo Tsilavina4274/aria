@@ -80,6 +80,14 @@ const AdminDashboard = () => {
     } catch (error) {
       setDbStatus('disconnected');
       console.error('Erreur de connexion à la base de données:', error);
+
+      // Activer le mode fallback
+      enableFallbackMode();
+      toast({
+        title: "Mode offline",
+        description: "⚠️ Fonctionnement en mode offline avec données de test",
+        variant: "default",
+      });
     }
   };
 
