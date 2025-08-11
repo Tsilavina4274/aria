@@ -5,15 +5,14 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
 
-  // En production, construire l'URL relative à partir de l'URL actuelle
-  // ou utiliser une variable d'environnement si définie
+  // En production, utiliser la variable d'environnement si définie
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
 
-  // Fallback : construire l'URL relative en production
-  const currentUrl = window.location;
-  return `${currentUrl.protocol}//${currentUrl.hostname}:3001/api`;
+  // En production sans backend déployé, retourner une URL qui va échouer
+  // pour déclencher le mode fallback avec les données par défaut
+  return 'http://localhost:3001/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
