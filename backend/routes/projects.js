@@ -229,6 +229,109 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
   }
 });
 
+// PUT /api/projects/:id - Mettre à jour un projet (admin seulement)
+router.put('/:id', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    // Validation des données
+    const { error, value } = projectSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données invalides',
+        details: error.details[0].message
+      });
+    }
+
+    // Conversion des technologies si c'est une string JSON
+    let technologies = value.technologies;
+    if (typeof technologies === 'string') {
+      try {
+        technologies = JSON.parse(technologies);
+      } catch (parseError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Format technologies invalide',
+          details: 'Les technologies doivent être un tableau JSON valide'
+        });
+      }
+    }
+
+    // Préparer données pour Prisma
+    const projectData = {
+      ...value,
+      technologies,
+      date: value.date ? new Date(value.date) : new Date(),
+    };
+
+    // Ajouter l'image si elle est fournie
+    if (req.file?.buffer) {
+      projectData.image = req.file.buffer;
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: {
+        id: req.params.id
+      },
+      data: projectData,
+    });
+
+    console.log(`✏️ Project updated: ${updatedProject.title} by ${req.user.email || 'Unknown'}`);
+
+    // Formatter le projet avant renvoi
+    const formattedProject = formatProjectForAPI(updatedProject);
+
+    res.json({
+      success: true,
+      message: 'Projet mis à jour avec succès',
+      data: { project: formattedProject }
+    });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+    console.error('Error updating project:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la mise à jour du projet',
+      details: error.message
+    });
+  }
+});
+
+// DELETE /api/projects/:id - Supprimer un projet (admin seulement)
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const deletedProject = await prisma.project.delete({
+      where: {
+        id: req.params.id
+      }
+    });
+
+    console.log(`🗑️ Project deleted: ${deletedProject.title} by ${req.user.email || 'Unknown'}`);
+
+    res.json({
+      success: true,
+      message: 'Projet supprimé avec succès'
+    });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+    console.error('Error deleting project:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la suppression du projet',
+      details: error.message
+    });
+  }
+});
+
 // POST /api/projects/:id/status - Changer le statut d'un projet (admin seulement)
 router.post('/:id/status', authenticateToken, async (req, res) => {
   try {
