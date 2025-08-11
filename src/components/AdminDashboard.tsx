@@ -391,12 +391,13 @@ const AdminDashboard = () => {
 
   const handleMarkAsRead = async (messageId: string) => {
     try {
-      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
-      const response = await apiToUse.updateMessageStatus(messageId, 'LU');
+      // Toujours essayer l'API réelle en premier
+      const response = await contactApi.updateMessageStatus(messageId, 'LU');
       if (response.success && response.data) {
         setMessages(messages.map(msg =>
           msg.id === messageId ? response.data.message : msg
         ));
+        localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Succès",
           description: "Message marqué comme lu",
@@ -404,11 +405,26 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de la mise à jour du statut",
-        variant: "destructive",
-      });
+      // Utiliser le mock seulement en cas d'échec
+      try {
+        const response = await mockContactApi.updateMessageStatus(messageId, 'LU');
+        if (response.success && response.data) {
+          setMessages(messages.map(msg =>
+            msg.id === messageId ? response.data.message : msg
+          ));
+          enableFallbackMode();
+          toast({
+            title: "Succès",
+            description: "Message marqué comme lu (mode offline)",
+          });
+        }
+      } catch (mockError) {
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la mise à jour du statut",
+          variant: "destructive",
+        });
+      }
     }
   };
 
