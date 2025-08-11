@@ -350,7 +350,8 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await contactApi.deleteMessage(messageId);
+      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+      const response = await apiToUse.deleteMessage(messageId);
       if (response.success) {
         setMessages(messages.filter((message) => message.id !== messageId));
         toast({
