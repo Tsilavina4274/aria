@@ -333,11 +333,9 @@ const AdminDashboard = () => {
     }
 
     try {
-      // Toujours essayer l'API réelle en premier
       const response = await contactApi.deleteMessage(messageId);
       if (response.success) {
         setMessages(messages.filter((message) => message.id !== messageId));
-        localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Succès",
           description: "Message supprimé avec succès",
@@ -345,24 +343,11 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      // Utiliser le mock seulement en cas d'échec
-      try {
-        const response = await mockContactApi.deleteMessage(messageId);
-        if (response.success) {
-          setMessages(messages.filter((message) => message.id !== messageId));
-          enableFallbackMode();
-          toast({
-            title: "Succès",
-            description: "Message supprimé avec succès (mode offline)",
-          });
-        }
-      } catch (mockError) {
-        toast({
-          title: "Erreur",
-          description: "Erreur lors de la suppression du message",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la suppression du message",
+        variant: "destructive",
+      });
     }
   };
 
