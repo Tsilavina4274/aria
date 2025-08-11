@@ -62,6 +62,35 @@ const DEFAULT_ADMIN = {
   role: 'ADMIN' // Utilisation d'une constante en majuscules pour les rôles
 };
 
+async function seedProjects() {
+  const existingCount = await prisma.project.count();
+
+  if (existingCount > 0) {
+    console.log(`⏩ ${existingCount} projets existent déjà, skip...`);
+    return existingCount;
+  }
+
+  for (const project of DEFAULT_PROJECTS) {
+    await prisma.project.create({
+      data: {
+        title: project.title,
+        description: project.description,
+        technologies: project.technologies,
+        client: project.client,
+        duration: project.duration,
+        status: project.status,
+        date: project.date,
+        url: project.url,
+        slug: project.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        image: project.image
+      }
+    });
+  }
+
+  console.log(`✅ ${DEFAULT_PROJECTS.length} projets créés avec succès.`);
+  return DEFAULT_PROJECTS.length;
+}
+
 
 async function createAdminUser() {
   const hashedPassword = await bcrypt.hash(DEFAULT_ADMIN.password, 12);
