@@ -73,7 +73,7 @@ const AdminDashboard = () => {
       const response = await healthApi.checkHealth();
       if (response.success) {
         setDbStatus('connected');
-        // Désactiver le mode fallback si l'API fonctionne
+        // D��sactiver le mode fallback si l'API fonctionne
         localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Base de données",
@@ -540,7 +540,7 @@ const AdminDashboard = () => {
                 ) : isInFallbackMode() ? (
                   <>⚠️ Mode offline - Données de démonstration</>
                 ) : (
-                  <>❌ Base de données: {
+                  <>��� Base de données: {
                     dbStatus === 'connected' ? 'Connectée' :
                     dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
                   }</>
@@ -568,6 +568,9 @@ const AdminDashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Diagnostic API */}
+        <ApiDiagnostic />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
