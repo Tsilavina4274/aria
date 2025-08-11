@@ -208,13 +208,14 @@ const AdminDashboard = () => {
       if (newProject.image) {
         setIsUploadingImage(true);
         try {
-          const apiToUse = isInFallbackMode() ? mockUploadApi : uploadApi;
-          const uploadResponse = await apiToUse.uploadImage(newProject.image);
+          // Toujours essayer l'API réelle en premier
+          const uploadResponse = await uploadApi.uploadImage(newProject.image);
           if (uploadResponse.success && uploadResponse.data) {
             imageUrl = uploadResponse.data.imageUrl;
+            localStorage.removeItem('api_fallback_mode');
           }
         } catch (uploadError) {
-          // Essayer avec le mock en fallback
+          // Utiliser le mock seulement en cas d'échec
           try {
             const uploadResponse = await mockUploadApi.uploadImage(newProject.image);
             if (uploadResponse.success && uploadResponse.data) {
