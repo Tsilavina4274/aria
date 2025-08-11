@@ -7,6 +7,53 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
+const DEFAULT_PROJECTS = [
+  {
+    title: "CGEPRO",
+    description: "Votre spécialiste du bois exotique et des aménagements extérieurs sur La Réunion",
+    technologies: ["WordPress", "PHP", "MySQL", "SEO"],
+    client: "CGEPRO",
+    duration: "2 mois",
+    status: "TERMINE",
+    image: null,
+    date: new Date("2024-03-15"),
+    url: "https://cgepro.com"
+  },
+  {
+    title: "ERIC RABY",
+    description: "Coaching en compétences sociales et émotionnelles",
+    technologies: ["React", "Node.js", "Stripe", "Calendar API"],
+    client: "Eric Raby Coaching",
+    duration: "3 mois",
+    status: "TERMINE",
+    image: null,
+    date: new Date("2024-04-22"),
+    url: "https://eric-raby.com"
+  },
+  {
+      title: "CONNECT TALENT",
+      description: "Plateforme de mise en relation entre entreprises et talents africains",
+      technologies: ["Vue.js", "Laravel", "PostgreSQL", "Socket.io"],
+      client: "Connect Talent Inc",
+      duration: "5 mois",
+      status: "TERMINE",
+      image: null,
+      date: new Date("2024-05-10"),
+      url: "https://connecttalent.cc"
+    },
+    {
+      title: "SOA DIA TRAVEL",
+      description: "Transport & Logistique à Madagascar",
+      technologies: ["Angular", "Express.js", "MongoDB", "Maps API"],
+      client: "SOA DIA TRAVEL",
+      duration: "4 mois",
+      status: "TERMINE",
+      image: null,
+      date: new Date("2024-06-01"),
+      url: "https://soatransplus.mg"
+    }
+];
+
 // Configuration des données par défaut
 const DEFAULT_ADMIN = {
   email: process.env.ADMIN_EMAIL || 'admin@aria-creative.com',
