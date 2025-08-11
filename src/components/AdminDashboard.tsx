@@ -71,6 +71,8 @@ const AdminDashboard = () => {
       const response = await healthApi.checkHealth();
       if (response.success) {
         setDbStatus('connected');
+        // Désactiver le mode fallback si l'API fonctionne
+        localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Base de données",
           description: "✅ Connexion à la base de données réussie",
@@ -81,7 +83,7 @@ const AdminDashboard = () => {
       setDbStatus('disconnected');
       console.error('Erreur de connexion à la base de données:', error);
 
-      // Activer le mode fallback
+      // Activer le mode fallback seulement si vraiment nécessaire
       enableFallbackMode();
       toast({
         title: "Mode offline",
