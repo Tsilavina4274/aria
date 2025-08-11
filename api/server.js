@@ -146,91 +146,240 @@ app.get('/api/projects/:id', (req, res) => {
 });
 
 app.post('/api/projects', (req, res) => {
-  const newProject = {
-    id: uuidv4(),
-    ...req.body,
-    slug: generateSlug(req.body.title),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  projects.push(newProject);
-  
-  res.status(201).json({
-    success: true,
-    message: 'Projet créé avec succès',
-    data: { project: newProject }
-  });
+  try {
+    // Validation des données requises
+    const { title, description, technologies, client, duration, status } = req.body;
+
+    if (!title || !description || !technologies || !client || !duration || !status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données invalides',
+        details: 'Tous les champs requis doivent être fournis: title, description, technologies, client, duration, status'
+      });
+    }
+
+    // Validation du status
+    if (!['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    // Validation des technologies (doit être un array)
+    let techArray = technologies;
+    if (typeof technologies === 'string') {
+      try {
+        techArray = JSON.parse(technologies);
+      } catch (e) {
+        techArray = technologies.split(',').map(t => t.trim());
+      }
+    }
+
+    if (!Array.isArray(techArray) || techArray.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Technologies invalides',
+        details: 'Les technologies doivent être un tableau non vide'
+      });
+    }
+
+    const newProject = {
+      id: uuidv4(),
+      title: title.trim(),
+      description: description.trim(),
+      technologies: techArray,
+      client: client.trim(),
+      duration: duration.trim(),
+      status,
+      url: req.body.url || '',
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      slug: generateSlug(title),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    projects.push(newProject);
+
+    console.log(`📝 Nouveau projet créé: ${newProject.title} (ID: ${newProject.id})`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Projet créé avec succès',
+      data: { project: newProject }
+    });
+  } catch (error) {
+    console.error('Erreur création projet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la création du projet'
+    });
+  }
 });
 
 app.put('/api/projects/:id', (req, res) => {
-  const projectIndex = projects.findIndex(p => p.id === req.params.id);
-  
-  if (projectIndex === -1) {
-    return res.status(404).json({
+  try {
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    const { title, description, technologies, client, duration, status } = req.body;
+
+    // Validation des données si elles sont fournies
+    if (title && title.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Titre invalide',
+        details: 'Le titre doit contenir au moins 2 caractères'
+      });
+    }
+
+    if (status && !['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    // Traitement des technologies
+    let techArray = technologies;
+    if (technologies) {
+      if (typeof technologies === 'string') {
+        try {
+          techArray = JSON.parse(technologies);
+        } catch (e) {
+          techArray = technologies.split(',').map(t => t.trim());
+        }
+      }
+
+      if (!Array.isArray(techArray)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Technologies invalides',
+          details: 'Les technologies doivent être un tableau'
+        });
+      }
+    }
+
+    // Mise à jour du projet
+    const updatedData = {
+      ...req.body,
+      ...(title && { title: title.trim() }),
+      ...(description && { description: description.trim() }),
+      ...(techArray && { technologies: techArray }),
+      ...(client && { client: client.trim() }),
+      ...(duration && { duration: duration.trim() }),
+      ...(title && { slug: generateSlug(title) }),
+      updatedAt: new Date().toISOString()
+    };
+
+    projects[projectIndex] = {
+      ...projects[projectIndex],
+      ...updatedData
+    };
+
+    console.log(`✏️ Projet mis à jour: ${projects[projectIndex].title} (ID: ${req.params.id})`);
+
+    res.json({
+      success: true,
+      message: 'Projet mis à jour avec succès',
+      data: { project: projects[projectIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour projet:', error);
+    res.status(500).json({
       success: false,
-      error: 'Projet non trouvé'
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du projet'
     });
   }
-  
-  projects[projectIndex] = {
-    ...projects[projectIndex],
-    ...req.body,
-    slug: generateSlug(req.body.title),
-    updatedAt: new Date().toISOString()
-  };
-  
-  res.json({
-    success: true,
-    message: 'Projet mis à jour avec succès',
-    data: { project: projects[projectIndex] }
-  });
 });
 
 app.delete('/api/projects/:id', (req, res) => {
-  const projectIndex = projects.findIndex(p => p.id === req.params.id);
-  
-  if (projectIndex === -1) {
-    return res.status(404).json({
+  try {
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    const deletedProject = projects[projectIndex];
+    projects.splice(projectIndex, 1);
+
+    console.log(`🗑️ Projet supprimé: ${deletedProject.title} (ID: ${req.params.id})`);
+
+    res.json({
+      success: true,
+      message: 'Projet supprimé avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur suppression projet:', error);
+    res.status(500).json({
       success: false,
-      error: 'Projet non trouvé'
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la suppression du projet'
     });
   }
-  
-  projects.splice(projectIndex, 1);
-  
-  res.json({
-    success: true,
-    message: 'Projet supprimé avec succès'
-  });
 });
 
 app.post('/api/projects/:id/status', (req, res) => {
-  const { status } = req.body;
-  const projectIndex = projects.findIndex(p => p.id === req.params.id);
-  
-  if (projectIndex === -1) {
-    return res.status(404).json({
+  try {
+    const { status } = req.body;
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut manquant',
+        details: 'Le champ status est requis'
+      });
+    }
+
+    if (!['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    const oldStatus = projects[projectIndex].status;
+    projects[projectIndex].status = status;
+    projects[projectIndex].updatedAt = new Date().toISOString();
+
+    console.log(`📊 Statut projet mis à jour: ${projects[projectIndex].title} (${oldStatus} → ${status})`);
+
+    res.json({
+      success: true,
+      message: 'Statut mis à jour avec succès',
+      data: { project: projects[projectIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour statut:', error);
+    res.status(500).json({
       success: false,
-      error: 'Projet non trouvé'
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du statut'
     });
   }
-  
-  if (!['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Statut invalide'
-    });
-  }
-  
-  projects[projectIndex].status = status;
-  projects[projectIndex].updatedAt = new Date().toISOString();
-  
-  res.json({
-    success: true,
-    message: 'Statut mis à jour avec succès',
-    data: { project: projects[projectIndex] }
-  });
 });
 
 // Contact routes
