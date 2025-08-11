@@ -232,7 +232,7 @@ export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
     }
     return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
   } catch (error) {
-    console.error('Erreur lors de la récupération des projets:', error);
+    console.warn('API non disponible, utilisation des données par défaut:', error.message);
     return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
   }
 };
