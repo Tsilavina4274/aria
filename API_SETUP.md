@@ -126,11 +126,23 @@ En production, remplacer par l'URL réelle de votre API déployée.
 - 🔒 Pour la production, remplacer par une vraie base de données (PostgreSQL, MySQL, etc.)
 - 🚫 Aucun système de fallback - l'API doit être accessible pour que le CRUD fonctionne
 
+## 🌐 Accès à l'Application
+
+### Frontend (Interface utilisateur)
+- **URL** : `http://localhost:8081`
+- **Admin** : `http://localhost:8081/admin`
+- **Credentials** : `admin@aria-creative.com` / `admin@aria25!!`
+
+### Backend (API)
+- **URL** : `http://localhost:3001/api`
+- **Health Check** : `http://localhost:3001/api/health`
+
 ## 🐛 Dépannage
 
 ### Erreur "Failed to fetch"
-- Vérifier que l'API est démarrée sur le bon port
-- Vérifier la variable `VITE_API_URL`
+- Vérifier que l'API est démarrée sur le port 3001
+- Vérifier que le frontend est sur le port 8081
+- Vérifier la variable `VITE_API_URL=http://localhost:3001/api`
 - Vérifier les paramètres CORS
 
 ### Erreur d'authentification
@@ -140,3 +152,7 @@ En production, remplacer par l'URL réelle de votre API déployée.
 ### Projets ne s'affichent pas
 - Vérifier l'endpoint `/api/projects/admin`
 - Vérifier le token d'authentification
+
+### Port déjà utilisé
+- Tuer les processus sur les ports 3001 et 8081 si nécessaire
+- Changer les ports dans `vite.config.ts` et `api/server.js` si besoin
