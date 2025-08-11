@@ -64,7 +64,7 @@ const convertAdminToApiProject = (adminProject: AdminProject): Omit<Project, 'id
   };
 };
 
-// Récupérer les projets par défaut en format AdminProject
+// Récupérer les projets par d��faut en format AdminProject
 const getDefaultAdminProjects = (): AdminProject[] => {
   return [
     {
@@ -217,24 +217,13 @@ export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
   throw new Error('Failed to fetch admin projects from API');
 };
 
-// Récupérer les projets depuis l'API (publics seulement)
+// Récupérer les projets depuis l'API (publics seulement) - VRAI CRUD SEULEMENT
 export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
-  try {
-    const response = await projectsApi.getPublicProjects();
-    if (response.success && response.data) {
-      // Désactiver le mode fallback si l'API fonctionne
-      localStorage.removeItem('api_fallback_mode');
-      return response.data.projects.map(convertApiToAdminProject);
-    }
-    throw new Error('API response not successful');
-  } catch (error) {
-    console.warn('API non disponible, utilisation des données par défaut:', error.message);
-    // Activer le mode fallback seulement en production ou quand vraiment nécessaire
-    if (!import.meta.env.DEV || error.message.includes('Failed to fetch')) {
-      localStorage.setItem('api_fallback_mode', 'true');
-    }
-    return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
+  const response = await projectsApi.getPublicProjects();
+  if (response.success && response.data) {
+    return response.data.projects.map(convertApiToAdminProject);
   }
+  throw new Error('Failed to fetch public projects from API');
 };
 
 
