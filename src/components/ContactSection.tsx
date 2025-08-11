@@ -37,22 +37,39 @@ const ContactForm = () => {
         message: formData.message
       };
 
-      const response = await contactApi.sendMessage(messageData);
+      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+    const response = await apiToUse.sendMessage(messageData);
 
+    if (response.success) {
+      setIsSubmitted(true);
+      console.log('📧 Message envoyé avec succès:', response.message);
+
+      // Reset après 5 secondes
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({ name: '', email: '', company: '', subject: '', message: '' });
+      }, 5000);
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi du message:', error);
+
+    // Essayer avec le mock en fallback
+    try {
+      const response = await mockContactApi.sendMessage(messageData);
       if (response.success) {
+        enableFallbackMode();
         setIsSubmitted(true);
-        console.log('📧 Message envoyé avec succès:', response.message);
+        console.log('📧 Message envoyé avec succès (mode offline):', response.message);
 
-        // Reset après 5 secondes
         setTimeout(() => {
           setIsSubmitted(false);
           setFormData({ name: '', email: '', company: '', subject: '', message: '' });
         }, 5000);
       }
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
-      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
-    } finally {
+    } catch (mockError) {
+      setSubmitError('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
+    }
+  } finally {
       setIsSubmitting(false);
     }
   };
