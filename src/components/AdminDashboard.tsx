@@ -474,25 +474,12 @@ const AdminDashboard = () => {
               </span>
             </div>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                forceApiMode();
-                setDbStatus('checking');
-                loadData();
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 text-sm"
-              title="Forcer l'utilisation de l'API réelle"
-            >
-              {isUsingRealApi() ? '✅ API Réelle' : '🔄 Forcer API'}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-orange-500 to-orange-400 text-black font-semibold py-3 px-6 rounded-lg hover:from-orange-400 hover:to-orange-300 transition duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-orange-500/50 border border-orange-400"
-            >
-              Déconnexion
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="bg-gradient-to-r from-orange-500 to-orange-400 text-black font-semibold py-3 px-6 rounded-lg hover:from-orange-400 hover:to-orange-300 transition duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-orange-500/50 border border-orange-400"
+          >
+            Déconnexion
+          </button>
         </div>
 
         {/* Diagnostic API */}
