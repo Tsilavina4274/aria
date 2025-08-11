@@ -384,20 +384,57 @@ app.post('/api/projects/:id/status', (req, res) => {
 
 // Contact routes
 app.post('/api/contact', (req, res) => {
-  const newMessage = {
-    id: uuidv4(),
-    ...req.body,
-    status: 'NOUVEAU',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  contactMessages.push(newMessage);
-  
-  res.json({
-    success: true,
-    message: 'Message envoyé avec succès'
-  });
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validation des champs requis
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données invalides',
+        details: 'Tous les champs requis doivent être fournis: name, email, subject, message'
+      });
+    }
+
+    // Validation email basique
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email invalide',
+        details: 'L\'adresse email n\'est pas valide'
+      });
+    }
+
+    const newMessage = {
+      id: uuidv4(),
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      company: req.body.company ? req.body.company.trim() : '',
+      subject: subject.trim(),
+      message: message.trim(),
+      status: 'NOUVEAU',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    contactMessages.push(newMessage);
+
+    console.log(`📧 Nouveau message de contact: ${newMessage.name} (${newMessage.email})`);
+
+    res.json({
+      success: true,
+      message: 'Message envoyé avec succès',
+      data: { id: newMessage.id }
+    });
+  } catch (error) {
+    console.error('Erreur envoi message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de l\'envoi du message'
+    });
+  }
 });
 
 app.get('/api/contact/admin', (req, res) => {
@@ -408,41 +445,82 @@ app.get('/api/contact/admin', (req, res) => {
 });
 
 app.delete('/api/contact/admin/:id', (req, res) => {
-  const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
-  
-  if (messageIndex === -1) {
-    return res.status(404).json({
+  try {
+    const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
+
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message non trouvé'
+      });
+    }
+
+    const deletedMessage = contactMessages[messageIndex];
+    contactMessages.splice(messageIndex, 1);
+
+    console.log(`🗑️ Message supprimé: ${deletedMessage.subject} de ${deletedMessage.name}`);
+
+    res.json({
+      success: true,
+      message: 'Message supprimé avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur suppression message:', error);
+    res.status(500).json({
       success: false,
-      error: 'Message non trouvé'
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la suppression du message'
     });
   }
-  
-  contactMessages.splice(messageIndex, 1);
-  
-  res.json({
-    success: true,
-    message: 'Message supprimé avec succès'
-  });
 });
 
 app.put('/api/contact/admin/:id/status', (req, res) => {
-  const { status } = req.body;
-  const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
-  
-  if (messageIndex === -1) {
-    return res.status(404).json({
+  try {
+    const { status } = req.body;
+    const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
+
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message non trouvé'
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut manquant',
+        details: 'Le champ status est requis'
+      });
+    }
+
+    if (!['NOUVEAU', 'LU', 'TRAITE', 'ARCHIVE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: NOUVEAU, LU, TRAITE ou ARCHIVE'
+      });
+    }
+
+    const oldStatus = contactMessages[messageIndex].status;
+    contactMessages[messageIndex].status = status;
+    contactMessages[messageIndex].updatedAt = new Date().toISOString();
+
+    console.log(`📊 Statut message mis à jour: ${contactMessages[messageIndex].subject} (${oldStatus} → ${status})`);
+
+    res.json({
+      success: true,
+      message: 'Statut mis à jour avec succès',
+      data: { message: contactMessages[messageIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour statut message:', error);
+    res.status(500).json({
       success: false,
-      error: 'Message non trouvé'
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du statut'
     });
   }
-  
-  contactMessages[messageIndex].status = status;
-  contactMessages[messageIndex].updatedAt = new Date().toISOString();
-  
-  res.json({
-    success: true,
-    data: { message: contactMessages[messageIndex] }
-  });
 });
 
 // Start server
