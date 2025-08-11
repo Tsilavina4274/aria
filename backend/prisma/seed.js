@@ -142,20 +142,21 @@ async function main() {
 
   if (webCategory && allProjects.length > 0) {
     try {
+      // Vérifier les associations existantes
+      const existingAssociations = await prisma.projectCategory.findMany({
+        where: { categoryId: webCategory.id }
+      });
+
       for (const project of allProjects) {
-        await prisma.projectCategory.upsert({
-          where: {
-            projectId_categoryId: {
+        const exists = existingAssociations.find(assoc => assoc.projectId === project.id);
+        if (!exists) {
+          await prisma.projectCategory.create({
+            data: {
               projectId: project.id,
               categoryId: webCategory.id
             }
-          },
-          update: {},
-          create: {
-            projectId: project.id,
-            categoryId: webCategory.id
-          }
-        });
+          });
+        }
       }
       console.log(`✅ ${allProjects.length} projets associés à la catégorie "Site Web"`);
     } catch (error) {
