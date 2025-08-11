@@ -237,7 +237,10 @@ export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
     throw new Error('API response not successful');
   } catch (error) {
     console.warn('API non disponible, utilisation des données par défaut:', error.message);
-    localStorage.setItem('api_fallback_mode', 'true');
+    // Activer le mode fallback seulement en production ou quand vraiment nécessaire
+    if (!import.meta.env.DEV || error.message.includes('Failed to fetch')) {
+      localStorage.setItem('api_fallback_mode', 'true');
+    }
     return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
   }
 };
