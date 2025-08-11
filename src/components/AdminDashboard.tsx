@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllAdminProjects, createProject, updateProject, deleteProject, updateProjectStatus, type AdminProject } from "@/services/projectsService";
 import { adminApi, uploadApi, contactApi, healthApi, type ContactMessage } from "@/services/api";
-import { mockContactApi, mockHealthApi, mockUploadApi, isInFallbackMode, enableFallbackMode } from "@/services/apiMock";
-import { forceApiMode, isUsingRealApi } from "@/utils/forceApiMode";
 import { useToast } from "@/hooks/use-toast";
-import ApiDiagnostic from "./ApiDiagnostic";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -73,7 +70,7 @@ const AdminDashboard = () => {
       const response = await healthApi.checkHealth();
       if (response.success) {
         setDbStatus('connected');
-        // D��sactiver le mode fallback si l'API fonctionne
+        // Désactiver le mode fallback si l'API fonctionne
         localStorage.removeItem('api_fallback_mode');
         toast({
           title: "Base de données",
@@ -540,7 +537,7 @@ const AdminDashboard = () => {
                 ) : isInFallbackMode() ? (
                   <>⚠️ Mode offline - Données de démonstration</>
                 ) : (
-                  <>��� Base de données: {
+                  <>❌ Base de données: {
                     dbStatus === 'connected' ? 'Connectée' :
                     dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
                   }</>
