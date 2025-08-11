@@ -36,11 +36,7 @@ const ContactForm = () => {
         message: formData.message
       };
 
-      // En production, utiliser directement le mock si pas d'API configurée
-    const shouldUseMock = !import.meta.env.DEV || isInFallbackMode();
-    const apiToUse = shouldUseMock ? mockContactApi : contactApi;
-
-    const response = await apiToUse.sendMessage(messageData);
+      const response = await contactApi.sendMessage(messageData);
 
     if (response.success) {
       setIsSubmitted(true);
@@ -54,23 +50,7 @@ const ContactForm = () => {
     }
   } catch (error) {
     console.error('Erreur lors de l\'envoi du message:', error);
-
-    // En cas d'erreur, toujours essayer avec le mock
-    try {
-      const response = await mockContactApi.sendMessage(messageData);
-      if (response.success) {
-        enableFallbackMode();
-        setIsSubmitted(true);
-        console.log('📧 Message envoyé avec succès (mode offline):', response.message);
-
-        setTimeout(() => {
-          setIsSubmitted(false);
-          setFormData({ name: '', email: '', company: '', subject: '', message: '' });
-        }, 5000);
-      }
-    } catch (mockError) {
-      setSubmitError('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
-    }
+    setSubmitError('Une erreur est survenue lors de l\'envoi du message. Vérifiez que le backend API est accessible.');
   } finally {
       setIsSubmitting(false);
     }
