@@ -396,14 +396,15 @@ const AdminDashboard = () => {
     if (!newStatus) return;
 
     try {
-      const response = await contactApi.updateMessageStatus(messageId, newStatus);
+      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+      const response = await apiToUse.updateMessageStatus(messageId, newStatus);
       if (response.success && response.data) {
         setMessages(messages.map(msg =>
           msg.id === messageId ? response.data.message : msg
         ));
         toast({
           title: "Succès",
-          description: `Statut changé vers "${newStatus}"`,
+          description: `Statut chang�� vers "${newStatus}"`,
         });
       }
     } catch (error) {
