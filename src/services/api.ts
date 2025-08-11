@@ -1,4 +1,22 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Configuration dynamique de l'URL de l'API
+const getApiBaseUrl = () => {
+  // En développement, utiliser la variable d'environnement ou localhost
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  }
+
+  // En production, construire l'URL relative à partir de l'URL actuelle
+  // ou utiliser une variable d'environnement si définie
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Fallback : construire l'URL relative en production
+  const currentUrl = window.location;
+  return `${currentUrl.protocol}//${currentUrl.hostname}:3001/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Types pour TypeScript
 export interface ApiResponse<T = any> {
