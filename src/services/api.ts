@@ -1,21 +1,10 @@
-// Configuration dynamique de l'URL de l'API
-const getApiBaseUrl = () => {
-  // En développement, utiliser la variable d'environnement ou localhost
+// Configuration de l'URL de l'API - OBLIGATOIRE pour le CRUD
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    return 'http://localhost:3001/api';
   }
-
-  // En production, utiliser la variable d'environnement si définie
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-
-  // En production sans backend déployé, retourner une URL qui va échouer
-  // pour déclencher le mode fallback avec les données par défaut
-  return 'http://localhost:3001/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+  throw new Error('VITE_API_URL must be configured in production for CRUD functionality');
+})();
 
 // Types pour TypeScript
 export interface ApiResponse<T = any> {
