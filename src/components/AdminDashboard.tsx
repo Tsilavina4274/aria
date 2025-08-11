@@ -191,23 +191,17 @@ const AdminDashboard = () => {
       if (newProject.image) {
         setIsUploadingImage(true);
         try {
-          // Toujours essayer l'API réelle en premier
           const uploadResponse = await uploadApi.uploadImage(newProject.image);
           if (uploadResponse.success && uploadResponse.data) {
             imageUrl = uploadResponse.data.imageUrl;
-            localStorage.removeItem('api_fallback_mode');
           }
         } catch (uploadError) {
-          // Utiliser le mock seulement en cas d'échec
-          try {
-            const uploadResponse = await mockUploadApi.uploadImage(newProject.image);
-            if (uploadResponse.success && uploadResponse.data) {
-              imageUrl = uploadResponse.data.imageUrl;
-              enableFallbackMode();
-            }
-          } catch (mockError) {
-            console.error('Erreur lors de l\'upload:', mockError);
-          }
+          console.error('Erreur lors de l\'upload:', uploadError);
+          toast({
+            title: "Erreur",
+            description: "Erreur lors de l'upload de l'image. Le projet sera créé sans image.",
+            variant: "destructive",
+          });
         } finally {
           setIsUploadingImage(false);
         }
