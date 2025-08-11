@@ -371,7 +371,8 @@ const AdminDashboard = () => {
 
   const handleMarkAsRead = async (messageId: string) => {
     try {
-      const response = await contactApi.updateMessageStatus(messageId, 'LU');
+      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+      const response = await apiToUse.updateMessageStatus(messageId, 'LU');
       if (response.success && response.data) {
         setMessages(messages.map(msg =>
           msg.id === messageId ? response.data.message : msg
