@@ -65,7 +65,7 @@ export const authenticateToken = (req, res, next) => {
       // Vérification supplémentaire en base de données
       const user = await prisma.user.findUnique({
         where: { email: decoded.email },
-        select: { id: true, role: truncate }
+        select: { id: true, role: true }
       });
 
       if (!user) {
