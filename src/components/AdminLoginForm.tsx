@@ -36,35 +36,8 @@ const AdminLoginForm = () => {
       console.error("Erreur de connexion:", error);
 
       if (error instanceof Error) {
-        if (error.message.includes("Backend non disponible") || error.message.includes("Failed to fetch")) {
-          // Mode fallback pour la production/démo
-          console.warn("Mode fallback activé - connexion sans backend");
-
-          // Vérification des credentials en local pour la démo
-          const defaultCredentials = {
-            email: "admin@aria-creative.com",
-            password: "admin@aria25!!"
-          };
-
-          if (email === defaultCredentials.email && password === defaultCredentials.password) {
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("api_fallback_mode", "true"); // Activer le mode fallback
-            localStorage.setItem("adminUser", JSON.stringify({
-              email: email,
-              name: "Administrateur",
-              role: "ADMIN"
-            }));
-
-            toast({
-              title: "Connexion réussie (mode démo)",
-              description: "Bienvenue Administrateur - Mode démonstration",
-            });
-
-            navigate("/dashboard");
-            return;
-          } else {
-            setError("Email ou mot de passe incorrect");
-          }
+        if (error.message.includes("Backend") || error.message.includes("Failed to fetch")) {
+          setError("Backend API non disponible. Vérifiez que le serveur est démarré.");
         } else if (error.message.includes("401") || error.message.includes("incorrect")) {
           setError("Email ou mot de passe incorrect");
         } else {
