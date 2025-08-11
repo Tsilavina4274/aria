@@ -37,7 +37,7 @@ const AdminLoginForm = () => {
 
       if (error instanceof Error) {
         if (error.message.includes("Backend non disponible") || error.message.includes("Failed to fetch")) {
-          // Mode fallback pour le développement/démo
+          // Mode fallback pour la production/démo
           console.warn("Mode fallback activé - connexion sans backend");
 
           // Vérification des credentials en local pour la démo
@@ -48,6 +48,7 @@ const AdminLoginForm = () => {
 
           if (email === defaultCredentials.email && password === defaultCredentials.password) {
             localStorage.setItem("isAuthenticated", "true");
+            localStorage.setItem("api_fallback_mode", "true"); // Activer le mode fallback
             localStorage.setItem("adminUser", JSON.stringify({
               email: email,
               name: "Administrateur",
@@ -55,8 +56,8 @@ const AdminLoginForm = () => {
             }));
 
             toast({
-              title: "Connexion réussie (mode offline)",
-              description: "Bienvenue Administrateur",
+              title: "Connexion réussie (mode démo)",
+              description: "Bienvenue Administrateur - Mode démonstration",
             });
 
             navigate("/dashboard");
@@ -150,7 +151,7 @@ const AdminLoginForm = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full px-3 py-2 text-sm bg-black/50 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition duration-300 hover:border-gray-500 pr-10"
-                      placeholder="••••••••"
+                      placeholder="���•••••••"
                       required
                     />
                     <button
