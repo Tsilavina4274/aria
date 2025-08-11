@@ -457,20 +457,14 @@ const AdminDashboard = () => {
             </h1>
             <div className="flex items-center gap-2 mt-2">
               <div className={`w-3 h-3 rounded-full ${
-                isUsingRealApi() && dbStatus === 'connected' ? 'bg-green-500' :
-                isInFallbackMode() ? 'bg-orange-500' : 'bg-red-500'
+                dbStatus === 'connected' ? 'bg-green-500' :
+                dbStatus === 'disconnected' ? 'bg-red-500' : 'bg-yellow-500'
               } animate-pulse`}></div>
               <span className="text-sm text-gray-400">
-                {isUsingRealApi() && dbStatus === 'connected' ? (
-                  <>✅ Base de données connectée - Données réelles</>
-                ) : isInFallbackMode() ? (
-                  <>⚠️ Mode offline - Données de démonstration</>
-                ) : (
-                  <>❌ Base de données: {
-                    dbStatus === 'connected' ? 'Connectée' :
-                    dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
-                  }</>
-                )}
+                Backend API: {
+                  dbStatus === 'connected' ? '✅ Connecté' :
+                  dbStatus === 'disconnected' ? '❌ Déconnecté' : '🔄 Vérification...'
+                }
               </span>
             </div>
           </div>
