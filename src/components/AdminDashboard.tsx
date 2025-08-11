@@ -268,7 +268,7 @@ const AdminDashboard = () => {
       technologies: project.technologies,
       client: project.client,
       duration: project.duration,
-      status: formatStatus(project.status) as 'En cours' | 'Terminé' | 'En attente',
+      status: formaterStatut(project.status) as 'En cours' | 'Terminé' | 'En attente',
       image: null,
       imagePreview: project.imagePreview || project.imageUrl,
       url: project.url || "",
