@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllAdminProjects, createProject, updateProject, deleteProject, updateProjectStatus, type AdminProject } from "@/services/projectsService";
 import { adminApi, uploadApi, contactApi, healthApi, type ContactMessage } from "@/services/api";
+import { mockContactApi, mockHealthApi, mockUploadApi, isInFallbackMode, enableFallbackMode } from "@/services/apiMock";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
