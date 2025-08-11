@@ -217,8 +217,7 @@ export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
     }
     return getDefaultAdminProjects();
   } catch (error) {
-    console.error('Erreur lors de la récupération des projets admin:', error);
-    console.log('Utilisation des projets par défaut (API indisponible)');
+    console.warn('API admin non disponible, utilisation des projets par défaut:', error.message);
     return getDefaultAdminProjects();
   }
 };
