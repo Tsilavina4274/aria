@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import rateLimit from 'express-rate-limit';
 import { prisma } from '../lib/prisma.js';
-import { truncate } from 'node:fs';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
