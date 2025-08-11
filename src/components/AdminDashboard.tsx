@@ -70,25 +70,21 @@ const AdminDashboard = () => {
       const response = await healthApi.checkHealth();
       if (response.success) {
         setDbStatus('connected');
-        // Désactiver le mode fallback si l'API fonctionne
-        localStorage.removeItem('api_fallback_mode');
         toast({
-          title: "Base de données",
-          description: "✅ Connexion à la base de données réussie",
+          title: "API Backend",
+          description: "✅ Connexion au backend réussie",
           variant: "default",
         });
       }
     } catch (error) {
       setDbStatus('disconnected');
-      console.error('Erreur de connexion à la base de données:', error);
-
-      // Activer le mode fallback seulement si vraiment nécessaire
-      enableFallbackMode();
+      console.error('Erreur de connexion au backend:', error);
       toast({
-        title: "Mode offline",
-        description: "⚠️ Fonctionnement en mode offline avec données de test",
-        variant: "default",
+        title: "Erreur Backend",
+        description: "❌ Impossible de contacter le backend API",
+        variant: "destructive",
       });
+      throw error; // Propager l'erreur car nous n'avons plus de fallback
     }
   };
 
