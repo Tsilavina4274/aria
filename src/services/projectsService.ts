@@ -208,24 +208,13 @@ export const convertAdminToClientProject = (adminProject: AdminProject): ClientP
 
 // API Functions - Utilisation de l'API backend
 
-// Récupérer tous les projets admin
+// Récupérer tous les projets admin - VRAI CRUD SEULEMENT
 export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
-  try {
-    const response = await projectsApi.getAllProjects();
-    if (response.success && response.data) {
-      // Désactiver le mode fallback si l'API fonctionne
-      localStorage.removeItem('api_fallback_mode');
-      return response.data.projects.map(convertApiToAdminProject);
-    }
-    throw new Error('API response not successful');
-  } catch (error) {
-    console.warn('API admin non disponible, utilisation des projets par défaut:', error.message);
-    // Activer le mode fallback seulement en production ou quand vraiment nécessaire
-    if (!import.meta.env.DEV || error.message.includes('Failed to fetch')) {
-      localStorage.setItem('api_fallback_mode', 'true');
-    }
-    return getDefaultAdminProjects();
+  const response = await projectsApi.getAllProjects();
+  if (response.success && response.data) {
+    return response.data.projects.map(convertApiToAdminProject);
   }
+  throw new Error('Failed to fetch admin projects from API');
 };
 
 // Récupérer les projets depuis l'API (publics seulement)
