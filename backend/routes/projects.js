@@ -197,12 +197,25 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
       }
     }
 
+    // Générer un slug depuis le titre
+    const generateSlug = (title) => {
+      return title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+        .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces et tirets
+        .trim()
+        .replace(/\s+/g, '-') // Remplacer espaces par tirets
+        .replace(/-+/g, '-'); // Éviter les tirets multiples
+    };
+
     // Préparer données pour Prisma
     const projectData = {
       ...value,
       technologies,
       date: value.date ? new Date(value.date) : new Date(),
       image: req.file?.buffer || null,  // Buffer binaire ou null
+      slug: generateSlug(value.title), // Générer le slug
     };
 
     const newProject = await prisma.project.create({
