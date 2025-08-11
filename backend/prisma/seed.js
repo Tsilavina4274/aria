@@ -139,19 +139,28 @@ async function main() {
   console.log('\n🔗 Association projets/catégories...');
   const allProjects = await prisma.project.findMany();
   const webCategory = await prisma.category.findFirst({ where: { name: 'Site Web' }});
-  
-  if (webCategory) {
-    await Promise.all(
-      allProjects.map(project => 
-        prisma.projectCategory.create({
-          data: {
+
+  if (webCategory && allProjects.length > 0) {
+    try {
+      for (const project of allProjects) {
+        await prisma.projectCategory.upsert({
+          where: {
+            projectId_categoryId: {
+              projectId: project.id,
+              categoryId: webCategory.id
+            }
+          },
+          update: {},
+          create: {
             projectId: project.id,
             categoryId: webCategory.id
           }
-        })
-      )
-    );
-    console.log(`✅ ${allProjects.length} projets associés à la catégorie "Site Web"`);
+        });
+      }
+      console.log(`✅ ${allProjects.length} projets associés à la catégorie "Site Web"`);
+    } catch (error) {
+      console.log(`⚠️  Erreur lors de l'association: ${error.message}`);
+    }
   }
 
   console.log('\n🎉 Seeding terminé avec succès !');
