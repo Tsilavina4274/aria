@@ -220,7 +220,10 @@ export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
     throw new Error('API response not successful');
   } catch (error) {
     console.warn('API admin non disponible, utilisation des projets par défaut:', error.message);
-    localStorage.setItem('api_fallback_mode', 'true');
+    // Activer le mode fallback seulement en production ou quand vraiment nécessaire
+    if (!import.meta.env.DEV || error.message.includes('Failed to fetch')) {
+      localStorage.setItem('api_fallback_mode', 'true');
+    }
     return getDefaultAdminProjects();
   }
 };
