@@ -59,6 +59,11 @@ L'API démarre avec 3 projets de démonstration:
 - ERIC RABY (TERMINE)  
 - CONNECT TALENT (TERMINE)
 
+## 🌐 Configuration des Ports
+
+- **Backend API** : `http://localhost:3001`
+- **Frontend** : `http://localhost:8081`
+
 ## 🌐 Déploiement
 
 ### Option 1: Vercel
