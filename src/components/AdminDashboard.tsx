@@ -5,6 +5,7 @@ import { adminApi, uploadApi, contactApi, healthApi, type ContactMessage } from 
 import { mockContactApi, mockHealthApi, mockUploadApi, isInFallbackMode, enableFallbackMode } from "@/services/apiMock";
 import { forceApiMode, isUsingRealApi } from "@/utils/forceApiMode";
 import { useToast } from "@/hooks/use-toast";
+import ApiDiagnostic from "./ApiDiagnostic";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
