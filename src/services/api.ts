@@ -118,9 +118,7 @@ class ApiClient {
 
       // Si c'est une erreur de réseau, ajouter un message plus explicite
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        console.warn(`Backend non disponible à ${API_BASE_URL.replace('/api', '')}. Utilisation des données par défaut.`);
-        // Dans ce cas, on va laisser les services gérer les fallbacks
-        throw new Error(`Backend non disponible. Utilisation des données par défaut.`);
+        throw new Error(`Backend API non disponible à ${API_BASE_URL.replace('/api', '')}. Vérifiez que le serveur backend est démarré et accessible.`);
       }
 
       throw error;
