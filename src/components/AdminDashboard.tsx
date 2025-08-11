@@ -107,18 +107,28 @@ const AdminDashboard = () => {
 
   const loadMessages = async () => {
     try {
-      const response = await contactApi.getAllMessages();
+      const apiToUse = isInFallbackMode() ? mockContactApi : contactApi;
+      const response = await apiToUse.getAllMessages();
       if (response.success && response.data) {
         setMessages(response.data.messages);
         console.log('📧 Messages de contact chargés:', response.data.messages.length);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des messages:', error);
-      toast({
-        title: "Messages",
-        description: "Impossible de charger les messages de contact",
-        variant: "destructive",
-      });
+      // Essayer avec le mock en fallback
+      try {
+        const response = await mockContactApi.getAllMessages();
+        if (response.success && response.data) {
+          setMessages(response.data.messages);
+          enableFallbackMode();
+        }
+      } catch (mockError) {
+        toast({
+          title: "Messages",
+          description: "Impossible de charger les messages de contact",
+          variant: "destructive",
+        });
+      }
     }
   };
 
