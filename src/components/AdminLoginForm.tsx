@@ -15,14 +15,11 @@ const AdminLoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
     try {
-      const response = await adminApi.login(email, password);
+      const response = await login(email, password);
 
       if (response.success) {
-        localStorage.setItem("isAuthenticated", "true");
-
         toast({
           title: "Connexion réussie",
           description: `Bienvenue ${response.user.name}`,
@@ -46,8 +43,6 @@ const AdminLoginForm = () => {
       } else {
         setError("Erreur de connexion. Veuillez réessayer.");
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
