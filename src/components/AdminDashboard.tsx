@@ -7,25 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
-  // Double vérification de l'authentification au niveau du composant
+  // Rediriger si pas authentifié (sécurité supplémentaire)
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await adminApi.verifyToken();
-        if (!response.success) {
-          // Token invalide, rediriger vers login
-          navigate("/admin", { replace: true });
-        }
-      } catch (error) {
-        // Erreur de vérification, rediriger vers login
-        console.error("Erreur vérification auth:", error);
-        navigate("/admin", { replace: true });
-      }
-    };
-
-    checkAuth();
-  }, [navigate]);
+    if (!isAuthenticated) {
+      navigate("/admin", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
