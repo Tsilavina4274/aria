@@ -219,11 +219,16 @@ export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
 
 // Récupérer les projets depuis l'API (publics seulement) - VRAI CRUD SEULEMENT
 export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
-  const response = await projectsApi.getPublicProjects();
-  if (response.success && response.data) {
-    return response.data.projects.map(convertApiToAdminProject);
+  try {
+    const response = await projectsApi.getPublicProjects();
+    if (response.success && response.data) {
+      return response.data.projects.map(convertApiToAdminProject);
+    }
+    throw new Error('API response was not successful');
+  } catch (error) {
+    console.error('Erreur API lors de la récupération des projets:', error);
+    throw error; // Re-throw pour que le fallback dans getClientProjects fonctionne
   }
-  throw new Error('Failed to fetch public projects from API');
 };
 
 
