@@ -6,6 +6,26 @@ import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+
+  // Double vérification de l'authentification au niveau du composant
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await adminApi.verifyToken();
+        if (!response.success) {
+          // Token invalide, rediriger vers login
+          navigate("/admin", { replace: true });
+        }
+      } catch (error) {
+        // Erreur de vérification, rediriger vers login
+        console.error("Erreur vérification auth:", error);
+        navigate("/admin", { replace: true });
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
