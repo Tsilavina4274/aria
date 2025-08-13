@@ -134,7 +134,7 @@ const AdminLoginForm = () => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={authLoading}
                   className="w-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-orange-300 text-black font-bold py-2 px-4 rounded-md transition duration-300 transform hover:-translate-y-0.5 shadow-md hover:shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
                 >
                   {isLoading ? (
