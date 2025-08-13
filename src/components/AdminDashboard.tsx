@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getAllAdminProjects, createProject, updateProject, deleteProject, updateProjectStatus, type AdminProject } from "@/services/projectsService";
 import { adminApi, uploadApi, contactApi, healthApi, type ContactMessage } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
