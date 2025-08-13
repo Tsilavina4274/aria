@@ -148,9 +148,7 @@ const AdminDashboard = () => {
   const [messageReply, setMessageReply] = useState("");
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    adminApi.logout();
-    navigate("/admin");
+    logout();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
