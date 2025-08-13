@@ -1,48 +1,8 @@
 import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { adminApi, TokenManager } from "@/services/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const verifyAuthentication = async () => {
-      try {
-        // Vérifier si on a un token
-        const token = TokenManager.getToken();
-        if (!token) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // Vérifier la validité du token via l'API
-        const response = await adminApi.verifyToken();
-
-        if (response.success) {
-          setIsAuthenticated(true);
-          // Maintenir la compatibilité avec l'ancien système
-          localStorage.setItem("isAuthenticated", "true");
-        } else {
-          // Token invalide
-          setIsAuthenticated(false);
-          TokenManager.removeToken();
-          localStorage.removeItem("isAuthenticated");
-        }
-      } catch (error) {
-        console.error('Erreur vérification auth:', error);
-        // En cas d'erreur (token expiré, network error, etc.)
-        setIsAuthenticated(false);
-        TokenManager.removeToken();
-        localStorage.removeItem("isAuthenticated");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    verifyAuthentication();
-  }, []);
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Afficher un loader pendant la vérification
   if (isLoading) {
