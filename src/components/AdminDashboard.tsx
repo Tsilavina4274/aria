@@ -3,9 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { getAllAdminProjects, createProject, updateProject, deleteProject, updateProjectStatus, type AdminProject } from "@/services/projectsService";
 import { adminApi, uploadApi, contactApi, healthApi, type ContactMessage } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  // Rediriger si pas authentifié (sécurité supplémentaire)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/admin", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,14 +81,20 @@ const AdminDashboard = () => {
       if (response.success) {
         setDbStatus('connected');
         toast({
-          title: "Base de données",
-          description: "✅ Connexion à la base de données réussie",
+          title: "API Backend",
+          description: "✅ Connexion au backend réussie",
           variant: "default",
         });
       }
     } catch (error) {
       setDbStatus('disconnected');
-      console.error('Erreur de connexion à la base de données:', error);
+      console.error('Erreur de connexion au backend:', error);
+      toast({
+        title: "Erreur Backend",
+        description: "❌ Impossible de contacter le backend API",
+        variant: "destructive",
+      });
+      throw error; // Propager l'erreur car nous n'avons plus de fallback
     }
   };
 
@@ -101,15 +117,16 @@ const AdminDashboard = () => {
       const response = await contactApi.getAllMessages();
       if (response.success && response.data) {
         setMessages(response.data.messages);
-        console.log('📧 Messages de contact chargés:', response.data.messages.length);
+        console.log('📧 Messages de contact chargés depuis l\'API:', response.data.messages.length);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des messages:', error);
       toast({
         title: "Messages",
-        description: "Impossible de charger les messages de contact",
+        description: "Impossible de charger les messages de contact depuis l'API",
         variant: "destructive",
       });
+      throw error; // Propager l'erreur car nous n'avons plus de fallback
     }
   };
 
@@ -131,9 +148,7 @@ const AdminDashboard = () => {
   const [messageReply, setMessageReply] = useState("");
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    adminApi.logout();
-    navigate("/admin");
+    logout();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -189,12 +204,12 @@ const AdminDashboard = () => {
             imageUrl = uploadResponse.data.imageUrl;
           }
         } catch (uploadError) {
-          // console.error('Erreur lors de l\'upload:', uploadError);
-          // toast({
-          //   title: "Erreur",
-          //   description: "Erreur lors de l'upload de l'image. Le projet sera créé sans image.",
-          //   variant: "destructive",
-          // });
+          console.error('Erreur lors de l\'upload:', uploadError);
+          toast({
+            title: "Erreur",
+            description: "Erreur lors de l'upload de l'image. Le projet sera créé sans image.",
+            variant: "destructive",
+          });
         } finally {
           setIsUploadingImage(false);
         }
@@ -268,7 +283,7 @@ const AdminDashboard = () => {
       technologies: project.technologies,
       client: project.client,
       duration: project.duration,
-      status: formatStatus(project.status) as 'En cours' | 'Terminé' | 'En attente',
+      status: formaterStatut(project.status) as 'En cours' | 'Terminé' | 'En attente',
       image: null,
       imagePreview: project.imagePreview || project.imageUrl,
       url: project.url || "",
@@ -449,11 +464,14 @@ const AdminDashboard = () => {
               <span className="text-orange-400">Dashboard</span> <span className="text-white">Admin</span>
             </h1>
             <div className="flex items-center gap-2 mt-2">
-              <div className={`w-3 h-3 rounded-full ${dbStatus === 'connected' ? 'bg-green-500' : dbStatus === 'disconnected' ? 'bg-red-500' : 'bg-yellow-500'} animate-pulse`}></div>
+              <div className={`w-3 h-3 rounded-full ${
+                dbStatus === 'connected' ? 'bg-green-500' :
+                dbStatus === 'disconnected' ? 'bg-red-500' : 'bg-yellow-500'
+              } animate-pulse`}></div>
               <span className="text-sm text-gray-400">
-                Base de données: {
-                  dbStatus === 'connected' ? 'Connectée' :
-                  dbStatus === 'disconnected' ? 'Déconnectée' : 'Vérification...'
+                Backend API: {
+                  dbStatus === 'connected' ? '✅ Connecté' :
+                  dbStatus === 'disconnected' ? '❌ Déconnecté' : '🔄 Vérification...'
                 }
               </span>
             </div>

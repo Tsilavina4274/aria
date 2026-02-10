@@ -38,20 +38,20 @@ const ContactForm = () => {
 
       const response = await contactApi.sendMessage(messageData);
 
-      if (response.success) {
-        setIsSubmitted(true);
-        console.log('📧 Message envoyé avec succès:', response.message);
+    if (response.success) {
+      setIsSubmitted(true);
+      console.log('📧 Message envoyé avec succès:', response.message);
 
-        // Reset après 5 secondes
-        setTimeout(() => {
-          setIsSubmitted(false);
-          setFormData({ name: '', email: '', company: '', subject: '', message: '' });
-        }, 5000);
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
-      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
-    } finally {
+      // Reset après 5 secondes
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({ name: '', email: '', company: '', subject: '', message: '' });
+      }, 5000);
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi du message:', error);
+    setSubmitError('Une erreur est survenue lors de l\'envoi du message. Vérifiez que le backend API est accessible.');
+  } finally {
       setIsSubmitting(false);
     }
   };

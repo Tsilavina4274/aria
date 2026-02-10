@@ -83,4 +83,6 @@ model ProjectCategory {
   projectId  String
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
+
+  @@unique([projectId, categoryId], name: "projectId_categoryId")
 }

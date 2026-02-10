@@ -1,0 +1,531 @@
+import express from 'express';
+import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Base de données en mémoire pour le développement
+let projects = [
+  {
+    id: uuidv4(),
+    title: "CGEPRO",
+    description: "Votre spécialiste du bois exotique et des aménagements extérieurs sur La Réunion",
+    technologies: ["WordPress", "PHP", "MySQL", "SEO"],
+    client: "CGEPRO",
+    duration: "2 mois",
+    status: "TERMINE",
+    url: "https://cgepro.com",
+    date: "2024-03-15",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: uuidv4(),
+    title: "ERIC RABY",
+    description: "Coaching en compétences sociales et émotionnelles",
+    technologies: ["React", "Node.js", "Stripe", "Calendar API"],
+    client: "Eric Raby Coaching",
+    duration: "3 mois",
+    status: "TERMINE",
+    url: "https://eric-raby.com",
+    date: "2024-04-22",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: uuidv4(),
+    title: "CONNECT TALENT",
+    description: "Plateforme de mise en relation entre entreprises et talents africains",
+    technologies: ["Vue.js", "Laravel", "PostgreSQL", "Socket.io"],
+    client: "Connect Talent Inc",
+    duration: "5 mois",
+    status: "TERMINE",
+    url: "https://connecttalent.cc",
+    date: "2024-05-10",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
+let users = [
+  {
+    id: uuidv4(),
+    email: "admin@aria-creative.com",
+    password: "admin@aria25!!",
+    name: "Administrateur",
+    role: "ADMIN"
+  }
+];
+
+let contactMessages = [];
+
+// Helper functions
+const generateSlug = (title) => {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
+
+// Admin routes
+app.post('/api/admin/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  const user = users.find(u => u.email === email && u.password === password);
+  
+  if (user && user.role === 'ADMIN') {
+    res.json({
+      success: true,
+      message: 'Authentification réussie',
+      token: 'fake-jwt-token-' + Date.now(),
+      user: {
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      error: 'Non autorisé',
+      message: 'Email ou mot de passe incorrect'
+    });
+  }
+});
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    }
+  });
+});
+
+// Projects routes
+app.get('/api/projects', (req, res) => {
+  const publicProjects = projects.filter(p => p.status === 'TERMINE');
+  res.json({
+    success: true,
+    data: { projects: publicProjects }
+  });
+});
+
+app.get('/api/projects/admin', (req, res) => {
+  res.json({
+    success: true,
+    data: { projects: projects }
+  });
+});
+
+app.get('/api/projects/:id', (req, res) => {
+  const project = projects.find(p => p.id === req.params.id);
+  if (project) {
+    res.json({
+      success: true,
+      project: project
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'Projet non trouvé'
+    });
+  }
+});
+
+app.post('/api/projects', (req, res) => {
+  try {
+    // Validation des données requises
+    const { title, description, technologies, client, duration, status } = req.body;
+
+    if (!title || !description || !technologies || !client || !duration || !status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données invalides',
+        details: 'Tous les champs requis doivent être fournis: title, description, technologies, client, duration, status'
+      });
+    }
+
+    // Validation du status
+    if (!['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    // Validation des technologies (doit être un array)
+    let techArray = technologies;
+    if (typeof technologies === 'string') {
+      try {
+        techArray = JSON.parse(technologies);
+      } catch (e) {
+        techArray = technologies.split(',').map(t => t.trim());
+      }
+    }
+
+    if (!Array.isArray(techArray) || techArray.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Technologies invalides',
+        details: 'Les technologies doivent être un tableau non vide'
+      });
+    }
+
+    const newProject = {
+      id: uuidv4(),
+      title: title.trim(),
+      description: description.trim(),
+      technologies: techArray,
+      client: client.trim(),
+      duration: duration.trim(),
+      status,
+      url: req.body.url || '',
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      slug: generateSlug(title),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    projects.push(newProject);
+
+    console.log(`📝 Nouveau projet créé: ${newProject.title} (ID: ${newProject.id})`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Projet créé avec succès',
+      data: { project: newProject }
+    });
+  } catch (error) {
+    console.error('Erreur création projet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la création du projet'
+    });
+  }
+});
+
+app.put('/api/projects/:id', (req, res) => {
+  try {
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    const { title, description, technologies, client, duration, status } = req.body;
+
+    // Validation des données si elles sont fournies
+    if (title && title.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Titre invalide',
+        details: 'Le titre doit contenir au moins 2 caractères'
+      });
+    }
+
+    if (status && !['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    // Traitement des technologies
+    let techArray = technologies;
+    if (technologies) {
+      if (typeof technologies === 'string') {
+        try {
+          techArray = JSON.parse(technologies);
+        } catch (e) {
+          techArray = technologies.split(',').map(t => t.trim());
+        }
+      }
+
+      if (!Array.isArray(techArray)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Technologies invalides',
+          details: 'Les technologies doivent être un tableau'
+        });
+      }
+    }
+
+    // Mise à jour du projet
+    const updatedData = {
+      ...req.body,
+      ...(title && { title: title.trim() }),
+      ...(description && { description: description.trim() }),
+      ...(techArray && { technologies: techArray }),
+      ...(client && { client: client.trim() }),
+      ...(duration && { duration: duration.trim() }),
+      ...(title && { slug: generateSlug(title) }),
+      updatedAt: new Date().toISOString()
+    };
+
+    projects[projectIndex] = {
+      ...projects[projectIndex],
+      ...updatedData
+    };
+
+    console.log(`✏️ Projet mis à jour: ${projects[projectIndex].title} (ID: ${req.params.id})`);
+
+    res.json({
+      success: true,
+      message: 'Projet mis à jour avec succès',
+      data: { project: projects[projectIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour projet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du projet'
+    });
+  }
+});
+
+app.delete('/api/projects/:id', (req, res) => {
+  try {
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    const deletedProject = projects[projectIndex];
+    projects.splice(projectIndex, 1);
+
+    console.log(`🗑️ Projet supprimé: ${deletedProject.title} (ID: ${req.params.id})`);
+
+    res.json({
+      success: true,
+      message: 'Projet supprimé avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur suppression projet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la suppression du projet'
+    });
+  }
+});
+
+app.post('/api/projects/:id/status', (req, res) => {
+  try {
+    const { status } = req.body;
+    const projectIndex = projects.findIndex(p => p.id === req.params.id);
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Projet non trouvé'
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut manquant',
+        details: 'Le champ status est requis'
+      });
+    }
+
+    if (!['EN_COURS', 'TERMINE', 'EN_ATTENTE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: EN_COURS, TERMINE ou EN_ATTENTE'
+      });
+    }
+
+    const oldStatus = projects[projectIndex].status;
+    projects[projectIndex].status = status;
+    projects[projectIndex].updatedAt = new Date().toISOString();
+
+    console.log(`📊 Statut projet mis à jour: ${projects[projectIndex].title} (${oldStatus} → ${status})`);
+
+    res.json({
+      success: true,
+      message: 'Statut mis à jour avec succès',
+      data: { project: projects[projectIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour statut:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du statut'
+    });
+  }
+});
+
+// Contact routes
+app.post('/api/contact', (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validation des champs requis
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données invalides',
+        details: 'Tous les champs requis doivent être fournis: name, email, subject, message'
+      });
+    }
+
+    // Validation email basique
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email invalide',
+        details: 'L\'adresse email n\'est pas valide'
+      });
+    }
+
+    const newMessage = {
+      id: uuidv4(),
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      company: req.body.company ? req.body.company.trim() : '',
+      subject: subject.trim(),
+      message: message.trim(),
+      status: 'NOUVEAU',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    contactMessages.push(newMessage);
+
+    console.log(`📧 Nouveau message de contact: ${newMessage.name} (${newMessage.email})`);
+
+    res.json({
+      success: true,
+      message: 'Message envoyé avec succès',
+      data: { id: newMessage.id }
+    });
+  } catch (error) {
+    console.error('Erreur envoi message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de l\'envoi du message'
+    });
+  }
+});
+
+app.get('/api/contact/admin', (req, res) => {
+  res.json({
+    success: true,
+    data: { messages: contactMessages }
+  });
+});
+
+app.delete('/api/contact/admin/:id', (req, res) => {
+  try {
+    const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
+
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message non trouvé'
+      });
+    }
+
+    const deletedMessage = contactMessages[messageIndex];
+    contactMessages.splice(messageIndex, 1);
+
+    console.log(`🗑️ Message supprimé: ${deletedMessage.subject} de ${deletedMessage.name}`);
+
+    res.json({
+      success: true,
+      message: 'Message supprimé avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur suppression message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la suppression du message'
+    });
+  }
+});
+
+app.put('/api/contact/admin/:id/status', (req, res) => {
+  try {
+    const { status } = req.body;
+    const messageIndex = contactMessages.findIndex(m => m.id === req.params.id);
+
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message non trouvé'
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut manquant',
+        details: 'Le champ status est requis'
+      });
+    }
+
+    if (!['NOUVEAU', 'LU', 'TRAITE', 'ARCHIVE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Statut invalide',
+        details: 'Le statut doit être: NOUVEAU, LU, TRAITE ou ARCHIVE'
+      });
+    }
+
+    const oldStatus = contactMessages[messageIndex].status;
+    contactMessages[messageIndex].status = status;
+    contactMessages[messageIndex].updatedAt = new Date().toISOString();
+
+    console.log(`📊 Statut message mis à jour: ${contactMessages[messageIndex].subject} (${oldStatus} → ${status})`);
+
+    res.json({
+      success: true,
+      message: 'Statut mis à jour avec succès',
+      data: { message: contactMessages[messageIndex] }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour statut message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur serveur',
+      details: 'Erreur lors de la mise à jour du statut'
+    });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Backend API démarré sur le port ${PORT}`);
+  console.log(`📊 ${projects.length} projets initialisés`);
+  console.log(`👤 Admin: admin@aria-creative.com / admin@aria25!!`);
+});

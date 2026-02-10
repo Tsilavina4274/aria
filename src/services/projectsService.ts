@@ -64,7 +64,7 @@ const convertAdminToApiProject = (adminProject: AdminProject): Omit<Project, 'id
   };
 };
 
-// Récupérer les projets par défaut en format AdminProject
+// Récupérer les projets par d��faut en format AdminProject
 const getDefaultAdminProjects = (): AdminProject[] => {
   return [
     {
@@ -208,32 +208,26 @@ export const convertAdminToClientProject = (adminProject: AdminProject): ClientP
 
 // API Functions - Utilisation de l'API backend
 
-// Récupérer tous les projets admin
+// Récupérer tous les projets admin - VRAI CRUD SEULEMENT
 export const getAllAdminProjects = async (): Promise<AdminProject[]> => {
-  try {
-    const response = await projectsApi.getAllProjects();
-    if (response.success && response.data) {
-      return response.data.projects.map(convertApiToAdminProject);
-    }
-    return getDefaultAdminProjects();
-  } catch (error) {
-    console.error('Erreur lors de la récupération des projets admin:', error);
-    console.log('Utilisation des projets par défaut (API indisponible)');
-    return getDefaultAdminProjects();
+  const response = await projectsApi.getAllProjects();
+  if (response.success && response.data) {
+    return response.data.projects.map(convertApiToAdminProject);
   }
+  throw new Error('Failed to fetch admin projects from API');
 };
 
-// Récupérer les projets depuis l'API (publics seulement)
+// Récupérer les projets depuis l'API (publics seulement) - VRAI CRUD SEULEMENT
 export const getProjectsFromStorage = async (): Promise<AdminProject[]> => {
   try {
     const response = await projectsApi.getPublicProjects();
     if (response.success && response.data) {
       return response.data.projects.map(convertApiToAdminProject);
     }
-    return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
+    throw new Error('API response was not successful');
   } catch (error) {
-    console.error('Erreur lors de la récupération des projets:', error);
-    return getDefaultAdminProjects().filter(p => p.status === 'TERMINE');
+    console.error('Erreur API lors de la récupération des projets:', error);
+    throw error; // Re-throw pour que le fallback dans getClientProjects fonctionne
   }
 };
 

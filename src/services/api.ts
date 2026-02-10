@@ -1,4 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Configuration de l'URL de l'API - OBLIGATOIRE pour le CRUD
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api';
+  }
+  throw new Error('VITE_API_URL must be configured in production for CRUD functionality');
+})();
 
 // Types pour TypeScript
 export interface ApiResponse<T = any> {
@@ -112,7 +118,7 @@ class ApiClient {
 
       // Si c'est une erreur de réseau, ajouter un message plus explicite
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error(`Backend non disponible. Vérifiez que le serveur backend est démarré sur ${API_BASE_URL.replace('/api', '')}`);
+        throw new Error(`Backend API non disponible à ${API_BASE_URL.replace('/api', '')}. Vérifiez que le serveur backend est démarré et accessible.`);
       }
 
       throw error;
